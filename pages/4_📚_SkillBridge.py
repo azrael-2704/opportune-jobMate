@@ -1,10 +1,10 @@
 import streamlit as st # type: ignore
 import ui.render_footer as footer
-import spacy
 import json
 import preprocessor.parser as parser
 from preprocessor.skills import extract_skills_fuzzy
 from recommender.resources import learning_resources
+from preprocessor.spacy_nlp import load_spacy_nlp_model
 
 #Page configuration
 st.set_page_config(page_title="SkillBridge", page_icon="📚", layout="centered", initial_sidebar_state="collapsed")
@@ -46,11 +46,9 @@ if resume_file:
         else:
             st.error("Unsupported file type. Please upload a PDF or DOCX.")
             st.stop()
-        try:
-            nlp = spacy.load("en_core_web_sm")
-        except OSError:
-            st.error("SpaCy model 'en_core_web_sm' not found. Please install it by running: python -m spacy download en_core_web_sm")
-            st.stop()
+        
+        # Load the SpaCy model using the cached function
+        nlp = load_spacy_nlp_model()
 
         resume_doc = nlp(resume_text)
         extracted_skills = set(extract_skills_fuzzy(resume_doc))

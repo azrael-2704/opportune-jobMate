@@ -85,11 +85,11 @@ if generate_standard or generate_ai_enhanced:
     if not personal["location"].strip():
         warnings.append("⚠️ Adding your Location is recommended.")
     if not personal["linkedin"].strip():
-        warnings.append("⚠️ Adding your LinkedIn URL is recommended.")
+        warnings.append("⚠️ Adding LinkedIn URL is recommended.")
     if not personal["github"].strip():
-        warnings.append("⚠️ Adding your GitHub URL is recommended.")
+        warnings.append("⚠️ Adding GitHub URL is recommended.")
     if not personal["website"].strip():
-        warnings.append("⚠️ Adding your Personal Website URL is recommended.")
+        warnings.append("⚠️ Adding Personal Website URL is recommended.")
 
     # Summary Check
     if not summary.strip():
@@ -104,33 +104,33 @@ if generate_standard or generate_ai_enhanced:
         if not education[i]["end_date"]:
             errors.append(f"❌ End Date {i + 1} is required.")
         if not education[i]["gpa"]:
-            warnings.append(f"⚠️ Adding your GPA {i + 1} is recommended.")
+            warnings.append(f"⚠️ Adding GPA {i + 1} is recommended.")
         if not education[i]["coursework"].strip():
-            warnings.append(f"⚠️ Adding your Coursework {i + 1} is recommended.")
+            warnings.append(f"⚠️ Adding Coursework {i + 1} is recommended.")
 
     # Work Experience Check
     for i in range (num_exp):
         if not experience[i]["job_title"]:
-            errors.append(f"❌ Job Title {i + 1} is required.")
+            errors.append(f"❌ Job {i + 1} Title is required.")
         if not experience[i]["company"]:
             errors.append(f"❌ Company {i + 1} is required.")
         if not experience[i]["end_date"]:
-            errors.append(f"❌ Job End Date {i + 1} is required.")
+            errors.append(f"❌ Job {i + 1} End Date is required.")
         if not experience[i]["responsibilities"]:
-            warnings.append(f"⚠️ Adding your Job Responsibilities and Challenges {i + 1} is recommended.")
+            warnings.append(f"⚠️ Adding Job Responsibilities and Challenges {i + 1} is recommended.")
     
     # Project Check
     for i in range (num_proj):
         if not projects[i]["title"]:
-            errors.append(f"❌ Project Title {i + 1} is required.")
+            errors.append(f"❌ Project {i + 1} Title is required.")
         if not projects[i]["tech_stack"]:
-            warnings.append(f"⚠️ Adding your Project Tech Stack {i + 1} is recommended.")
+            warnings.append(f"⚠️ Adding Project {i + 1} Tech Stack is recommended.")
         if not projects[i]["link"]:
-            warnings.append(f"⚠️ Adding your Repository Link {i + 1} is recommended.")
+            warnings.append(f"⚠️ Adding Repository Link {i + 1} is recommended.")
         if not projects[i]["deployment"]:
             warnings.append(f"⚠️ Adding your Deployment Link {i + 1} is recommended.")
         if not projects[i]["description"].strip():
-            errors.append(f"❌ Project Description {i + 1} is required.")
+            errors.append(f"❌ Project {i + 1} Description is required.")
 
     # Skills Check
     if len(skills["technical"]) + len(skills["soft"]) == 0:
@@ -143,9 +143,11 @@ if generate_standard or generate_ai_enhanced:
     # Certification Check
     for i in range (num_cert):
         if not certifications[i]["title"]:
-            errors.append(f"❌ Certification Title {i + 1} is required.")
+            errors.append(f"❌ Certification {i + 1} Title is required.")
+        if not certifications[i]["issuer"]:
+            warnings.append(f"⚠️ Adding Certification {i + 1} Issuer is recommended.")
         if not certifications[i]["link"]:
-            warnings.append(f"⚠️ Certification Link {i + 1} is recommended.")
+            warnings.append(f"⚠️ Adding Certification {i + 1} Link is recommended.")
 
     # Experience/project validation if count > 0
     if num_exp > 0 and not experience:
@@ -179,6 +181,11 @@ if generate_standard or generate_ai_enhanced:
 
             processed_experience = []
             processed_projects = []
+
+            # Check if AI enhancement is requested but API key is missing
+            if generate_ai_enhanced and not gemini_api_key:
+                st.warning("No Gemini API key provided. An unenhanced resume will be generated.")
+                generate_ai_enhanced = False # Disable enhancement for this run
 
             # Process Summary
             if generate_ai_enhanced and gemini_api_key:

@@ -6,7 +6,7 @@ def render_footer(current_page_label: str):
     page_links = {
         "🏠 Home": "Home.py",
         "🤖 AutoApply": "pages/1_🤖_AutoApply.py",
-        "✅ FitCheck": "pages/2_✅_FitCheck.py",
+        "🔎 JobMatcher": "pages/2_🔎_JobMatcher.py",
         "💼 CareerMatch": "pages/3_💼_CareerMatch.py",
         "📚 SkillBridge": "pages/4_📚_SkillBridge.py",
         "📝 ResumeBuilder": "pages/5_📝_ResumeBuilder.py",

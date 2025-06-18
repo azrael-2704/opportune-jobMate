@@ -1,11 +1,12 @@
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT, WD_LINE_SPACING # Removed WD_TAB_LEADER
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT, WD_LINE_SPACING
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.enum.style import WD_STYLE_TYPE
 import io
+import re # Import re module for URL cleaning
 
 # Stores the calculated right margin end for consistent tab stop placement
 global_margin_end = None
@@ -119,11 +120,24 @@ def _add_hyperlink(doc_obj, paragraph, url, text, size=10):
 
     return new_run
 
+def _clean_url_display(url):
+    """Removes http(s):// and www. from a URL for cleaner display."""
+    if not url:
+        return ""
+    # Remove protocol
+    cleaned_url = re.sub(r"https?://", "", url, 1)
+    # Remove www. if present at the start
+    cleaned_url = re.sub(r"^www\.", "", cleaned_url, 1)
+    # Remove trailing slash if present
+    if cleaned_url.endswith('/'):
+        cleaned_url = cleaned_url[:-1]
+    return cleaned_url
 
-def _add_left_right_paragraph(doc_obj, left_content, right_display_text, right_url=None, left_size=10, right_size=10):
+
+def _add_left_right_paragraph(doc_obj, left_content, right_display_text, right_url=None, left_size=10, right_size=10, right_italic=False):
     """
     Adds a paragraph with content aligned to the left and optional text/hyperlink aligned to the right
-    using a tab stop.
+    using a tab stop, with option for italic on right text.
     """
     p = doc_obj.add_paragraph()
     p.paragraph_format.space_after = Pt(2) # Minimal vertical spacing after the paragraph
@@ -155,7 +169,15 @@ def _add_left_right_paragraph(doc_obj, left_content, right_display_text, right_u
     if right_display_text.strip():
         # Adds a tab character to push the subsequent text to the right-aligned tab stop.
         p.add_run("\t")
-        _add_hyperlink(doc_obj, p, right_url, right_display_text, right_size) # Calls helper for hyperlink creation
+        if right_url and (right_url.startswith("http://") or right_url.startswith("https://")):
+            # If a valid URL is provided, it's a hyperlink. _add_hyperlink handles formatting.
+            _add_hyperlink(doc_obj, p, right_url, right_display_text, right_size)
+        else:
+            # If no valid URL, it's plain text. Apply font and italic if requested.
+            run_right = p.add_run(right_display_text)
+            run_right.font.size = Pt(right_size)
+            run_right.font.name = 'Cambria'
+            run_right.italic = right_italic # Apply italic here
 
 
 def _add_bullet_point(doc_obj, text):
@@ -207,7 +229,8 @@ def add_header_section(doc, name, title, location, email, phone, website, linked
     if location.strip(): contact_parts.append(location.strip())
     if email.strip(): contact_parts.append(email.strip())
     if phone.strip(): contact_parts.append(phone.strip())
-    # Add the website to contact_parts only if it's a valid URL, so it gets processed below
+    
+    # Add the website to contact_parts only if it's a valid URL, to ensure it's processed as a link
     if website.strip(): contact_parts.append(website.strip()) 
 
     if contact_parts:
@@ -218,13 +241,8 @@ def add_header_section(doc, name, title, location, email, phone, website, linked
         # Iterates through contact parts, making URLs clickable and adding separators.
         for i, part in enumerate(contact_parts):
             if part.startswith("http://") or part.startswith("https://"):
-                # Check if this specific part is the main website URL
-                if part == website.strip():
-                    display_text_for_link = "Portfolio Website"
-                else:
-                    # For any other http/https link in contact parts (e.g., if you added another link type later)
-                    display_text_for_link = part.replace("http://", "").replace("https://", "").replace("www.", "")
-                
+                # Clean the URL for display
+                display_text_for_link = _clean_url_display(part)
                 _add_hyperlink(doc, contact_para, part, display_text_for_link, size=10)
             else:
                 run = contact_para.add_run(part)
@@ -247,7 +265,8 @@ def add_header_section(doc, name, title, location, email, phone, website, linked
 
     links_added = False
     if linkedin.strip():
-        _add_hyperlink(doc, linkedin_github_para, linkedin, "LinkedIn Profile", size=10)
+        linkedin_display_text = _clean_url_display(linkedin.strip())
+        _add_hyperlink(doc, linkedin_github_para, linkedin, linkedin_display_text, size=10)
         links_added = True
     
     if github.strip():
@@ -256,9 +275,9 @@ def add_header_section(doc, name, title, location, email, phone, website, linked
             run = linkedin_github_para.add_run(" | ")
             run.font.size = Pt(10)
             run.font.name = 'Cambria'
-        _add_hyperlink(doc, linkedin_github_para, github, "GitHub Profile", size=10)
+        github_display_text = _clean_url_display(github.strip())
+        _add_hyperlink(doc, linkedin_github_para, github, github_display_text, size=10)
         links_added = True
-
 
 
 def add_summary_section(doc, summary_text):
@@ -320,13 +339,9 @@ def add_education_section(doc, education_entries):
                 right_gpa_text = f"GPA: {edu['gpa'].strip()}"
             
             # Use _add_left_right_paragraph for the second line (Degree and GPA)
+            # Pass right_italic=True to ensure GPA text is italicized.
             if left_degree_content or right_gpa_text:
-                _add_left_right_paragraph(doc, left_degree_content, right_gpa_text, None, left_size=10, right_size=10)
-                # Note: Setting italic for GPA is handled within _add_hyperlink (called by _add_left_right_paragraph)
-                # for the right_display_text. Since GPA is just text, it won't be italicized by _add_hyperlink directly.
-                # If GPA *must* be italic, we'd need a more custom run within _add_left_right_paragraph or
-                # modify _add_hyperlink to apply italic to plain text too.
-                # For now, it will be plain text on the right.
+                _add_left_right_paragraph(doc, left_degree_content, right_gpa_text, None, left_size=10, right_size=10, right_italic=True)
 
 
             # --- Line 3: Relevant Coursework ---
@@ -396,6 +411,7 @@ def add_work_experience_section(doc, experiences):
                         p.paragraph_format.left_indent = Inches(0.25)
                         p.paragraph_format.first_line_indent = Inches(-0.25)
                         p.paragraph_format.space_after = Pt(2)
+                        p.paragraph_format.line_before = Pt(2) # Corrected this line
                         p.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
 
                         # Splits the description and adds runs for normal text and special notations.
@@ -427,15 +443,16 @@ def add_projects_section(doc, projects):
         for proj in valid_projects:
             # Adds the Project Title (left) and Live Demo Link (right).
             left_proj_title_content = [(proj['title'].strip(), True, False)]
+            
             deployment_url = proj.get('deployment', '').strip()
-            deployment_display_text = "Live Demo" if deployment_url else ""
+            deployment_display_text = _clean_url_display(deployment_url) if deployment_url else ""
             
             _add_left_right_paragraph(doc, left_proj_title_content, deployment_display_text, deployment_url, left_size=10, right_size=10)
             
             # Adds Tech Stack (left) and GitHub Link (right) if either is present.
             tech_stack_text = proj.get('tech_stack', '').strip()
             github_url = proj.get('link', '').strip()
-            github_display_text = "Repository" if github_url else ""
+            github_display_text = _clean_url_display(github_url) if github_url else ""
 
             if tech_stack_text or github_url:
                 left_tech_stack_content = []
@@ -510,7 +527,7 @@ def add_certifications_training_section(doc, certifications):
                 left_cert_content.append((f"({cert['issuer'].strip()})", False, False))
 
             cert_url = cert.get('link', '').strip()
-            cert_display_text = "View Certificate" if cert_url else ""
+            cert_display_text = _clean_url_display(cert_url) if cert_url else ""
 
             _add_left_right_paragraph(doc, left_cert_content, cert_display_text, cert_url, left_size=10, right_size=10)
 

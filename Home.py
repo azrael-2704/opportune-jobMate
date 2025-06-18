@@ -16,8 +16,10 @@ st.caption("<p style='text-align: center;'>An intelligent tool to analyze your r
 st.divider()
 
 # Intro Section
-st.header("👋 Welcome to Opportune: JobMate")
-st.subheader("📌 What You Can Do")
+st.title("👋 Welcome to Opportune: JobMate")
+st.divider()
+st.header("❔ What You Can Do")
+st.markdown("<br>", unsafe_allow_html=True)
 
 col1, col2 = st.columns([0.4, 0.6], vertical_alignment="center", gap="small")
 col3, col4 = st.columns([0.4, 0.6], vertical_alignment="center", gap="small")
@@ -31,7 +33,7 @@ with col2:
     st.markdown("Automates the job application process by filling out forms.")
 
 with col3:
-    st.page_link("pages/2_✅_FitCheck.py", label = "FitCheck", icon = "✅", use_container_width=True)
+    st.page_link("pages/2_🔎_JobMatcher.py", label = "JobMatcher", icon = "🔎", use_container_width=True)
 with col4:
     st.markdown("Checks if your resume fits a given Job Description.")
 
