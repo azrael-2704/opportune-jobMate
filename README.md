@@ -1,9 +1,3 @@
-https://www.kaggle.com/datasets/meerawks/it-skills-from-jobs
-
-https://www.kaggle.com/datasets/gauravduttakiit/resume-dataset
-
-https://www.kaggle.com/datasets/arbazkhan971/allskillandnonskill
-
 Using:
 https://www.kaggle.com/datasets/anshdwvdi/list-of-all-universities-in-the-world?resource=download
 
