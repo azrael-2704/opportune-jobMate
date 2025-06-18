@@ -1,0 +1,63 @@
+import streamlit as st
+import ui.render_footer as footer
+
+# Page configuration
+st.set_page_config(page_title="Home", page_icon="🏠", layout="centered", initial_sidebar_state="expanded")
+st.logo("ui/assets/header.png", size = "large", icon_image= "ui/assets/logo.png")
+
+# Sidebar configuration
+st.sidebar.title("Home")
+st.sidebar.markdown("Welcome to the Opportune: JobMate Landing Page! Use the sidebar to navigate through the tools available.")
+
+# Header
+st.image("ui/assets/header.png", use_container_width=True)
+st.write("")
+st.caption("<p style='text-align: center;'>An intelligent tool to analyze your resume, match job roles, and evaluate job descriptions — all in one place</p>", unsafe_allow_html=True)
+st.divider()
+
+# Intro Section
+st.header("👋 Welcome to Opportune: JobMate")
+st.subheader("📌 What You Can Do")
+
+col1, col2 = st.columns([0.4, 0.6], vertical_alignment="center", gap="small")
+col3, col4 = st.columns([0.4, 0.6], vertical_alignment="center", gap="small")
+col5, col6 = st.columns([0.4, 0.6], vertical_alignment="center", gap="small")
+col7, col8 = st.columns([0.4, 0.6], vertical_alignment="center", gap="small")
+col9, col10 = st.columns([0.4, 0.6], vertical_alignment="center", gap="small")
+
+with col1:
+    st.page_link("pages/1_🤖_AutoApply.py", label = "AutoApply", icon = "🤖", use_container_width=True)
+with col2:
+    st.markdown("Automates the job application process by filling out forms.")
+
+with col3:
+    st.page_link("pages/2_✅_FitCheck.py", label = "FitCheck", icon = "✅", use_container_width=True)
+with col4:
+    st.markdown("Checks if your resume fits a given Job Description.")
+
+with col5:
+    st.page_link("pages/3_💼_CareerMatch.py", label = "CareerMatch", icon = "💼", use_container_width=True)
+with col6:
+    st.markdown("Recommends top job roles based on your skills.")
+
+with col5:
+    st.page_link("pages/4_📚_SkillBridge.py", label = "SkillBridge", icon = "📚", use_container_width=True)
+with col6:
+    st.markdown("Identifies skill gaps for specific job roles.")
+
+with col7:
+    st.page_link("pages/5_📝_ResumeBuilder.py", label = "ResumeBuilder", icon = "📝", use_container_width=True)
+with col8:
+    st.markdown("Generates a professional resume tailored to your skills.")
+
+with col9:
+    st.page_link("pages/6_🛠️_ATS_TuneUp.py", label = "ATS TuneUp", icon = "🛠️", use_container_width=True)
+with col10:
+    st.markdown("Improve ATS compatibility and get resume enhancement tips.")
+
+# Sidebar hint
+st.markdown("---")
+st.info("📂 Click on the required service or use the left sidebar to navigate between tools.")
+
+# Footer
+footer.render_footer("🏠 Home")

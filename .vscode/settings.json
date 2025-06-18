@@ -1,9 +1,29 @@
 {
     "cSpell.words": [
+        "fitz",
+        "genai",
+        "generativeai",
+        "githublogo",
+        "Hackathons",
+        "instagramlogo",
+        "linkedinlogo",
+        "msword",
+        "multimodal",
+        "ngram",
+        "ngrams",
+        "nlogn",
         "nltk",
+        "officedocument",
+        "openxmlformats",
+        "oxml",
+        "PROPN",
         "pycache",
         "scikit",
+        "selectbox",
         "spacy",
-        "streamlit"
+        "streamlit",
+        "unbold",
+        "unbolded",
+        "wordprocessingml"
     ]
 }
