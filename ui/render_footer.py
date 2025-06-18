@@ -17,7 +17,7 @@ def render_footer(current_page_label: str):
 
     github_url = "https://github.com/azrael-2704/opportune-jobMate"
     linkedin_url = "https://www.linkedin.com/in/anayachala/"
-    instagram_url = "https://www.instagram.com/_amartyaa_/"
+    gmail_url = "mailto:opportune.jobmate@gmail.com"
 
     st.divider()
 
@@ -28,7 +28,7 @@ def render_footer(current_page_label: str):
 
     st.divider()
 
-    col_left, col_right = st.columns([0.4, 0.4], border=True)
+    col_left, col_right = st.columns([0.4, 0.4])
 
     with col_left:
         st.markdown("#### 💻 Access the Repo")
@@ -46,9 +46,10 @@ def render_footer(current_page_label: str):
         with col_ll:
             st.link_button("LinkedIn", linkedin_url, type="tertiary")
         with col_ii:
-            st.image("ui/assets/instagramlogo.png", width=20)
+            st.image("ui/assets/gmaillogo.png", width=20)
         with col_il:
-            st.link_button("Instagram", instagram_url, type="tertiary")
+            #st.link_button("Gmail", gmail_url, type="tertiary")
+            st.write("opportune.jobmate@gmail.com")
 
 
     with col_right:
