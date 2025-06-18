@@ -1,7 +1,9 @@
-streamlit
-PyMuPDF
-spacy
-rapidfuzz
+google-generativeai==0.8.5
+Jinja2==3.1.6
+numpy==2.3.0
+pillow==11.2.1
+PyMuPDF==1.26.1
 python-docx==1.1.2
-pillow
-numpy
+RapidFuzz==3.13.0
+spacy==3.8.7
+streamlit==1.45.1
