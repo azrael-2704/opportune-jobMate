@@ -29,7 +29,6 @@ def get_gemini_api_key():
             value=st.session_state.gemini_api_key,
             key="gemini_api_input"
         )
-        # Add note about free tier limits
         st.markdown(
             """
             <small><i>Note: The Gemini API has free tier usage limits (e.g., requests per minute, tokens per day). If you encounter errors like 'Quota Exceeded,' please wait a few minutes or check your usage on Google AI Studio.</i></small>
@@ -74,10 +73,9 @@ def get_suitable_gemini_model(api_key):
     selected_model = None
     for preferred_model_name in preferred_models_order:
         for model in available_models:
-            # Check for exact name match (with and without 'models/' prefix)
             if model.name == preferred_model_name or model.name == f"models/{preferred_model_name}":
                 selected_model = model.name
-                break # Found a preferred model, use it
+                break
         if selected_model:
             break
 
@@ -91,27 +89,22 @@ def get_suitable_gemini_model(api_key):
             # Try to find a non-vision model among available ones
             for model in available_models:
                 if 'generateContent' in model.supported_generation_methods and "vision" not in model.name.lower():
-                    # Removed st.info here
                     return model.name
-            # Removed st.warning here
-            return selected_model # Fallback if no non-vision model was found
+            return selected_model
         else:
-            # Removed st.info here
             return selected_model
             
     # If no preferred model found, return the first available general text model
     for model in available_models:
         if 'generateContent' in model.supported_generation_methods and "vision" not in model.name.lower():
-            # Removed st.warning here
             return model.name
             
     # If all else fails, return the first model found that supports generateContent (could be vision)
     for model in available_models:
         if 'generateContent' in model.supported_generation_methods:
-            # Removed st.warning here
             return model.name
 
-    return None # No suitable model found
+    return None
 
 def generate_prompt(section_name, text_content, tone="Professional"):
     """
@@ -122,12 +115,10 @@ def generate_prompt(section_name, text_content, tone="Professional"):
     if section_name == "professional summary":
         return f"{base_prompt} Ensure it is between 30 to 70 words.\n\nHere is the summary:\n{text_content}\n\nEnhanced Professional Summary (30-70 words):"
     elif section_name == "job responsibility":
-        # Request max 3 bullet points, without headers or extra formatting.
-        # Added instruction for estimated numeric statistics.
+        # Request max 3 bullet points, without headers or extra formatting with estimated numeric statistics.
         return f"Rewrite the following job responsibilities into a maximum of 3 concise, impactful bullet points. Each bullet point should start with a strong action verb and focus on quantifiable achievements. If specific numbers are not provided, estimate reasonable numeric statistics (e.g., 'increased efficiency by 20%', 'reduced errors by 15%') to demonstrate impact. Do NOT include any headers, introductory text, or concluding remarks. Provide ONLY the bullet points, one per line.\n\nHere are the job responsibilities:\n{text_content}\n\nEnhanced Responsibilities (max 3 bullet points with quantifiable results):"
     elif section_name == "project description":
-        # Request max 3 bullet points, without headers or extra formatting.
-        # Added instruction for estimated numeric statistics.
+        # Request max 3 bullet points, without headers or extra formatting with estimated numeric statistics.
         return f"Rewrite the following project descriptions into a maximum of 3 concise, impactful bullet points. Each bullet point should start with a strong action verb and highlight contributions and results. If specific numbers are not provided, estimate reasonable numeric statistics (e.g., 'improved performance by 25%', 'handled 500+ users') to demonstrate impact. Do NOT include any headers, introductory text, or concluding remarks. Provide ONLY the bullet points, one per line.\n\nHere are the project descriptions:\n{text_content}\n\nEnhanced Project Descriptions (max 3 bullet points with quantifiable results):"
     elif section_name == "skills section":
         # Request specific format for skills: Technical Skills: ..., Soft Skills: ...
@@ -146,20 +137,17 @@ def enhance_content_with_gemini(section_name, text_content, tone, api_key):
         st.error("Gemini API key is not provided. Please enter your API key to use AI enhancement.")
         return text_content # Return original content if no API key
 
-    # Dynamically get the model name
     model_name = get_suitable_gemini_model(api_key)
     if not model_name:
         st.error(f"No suitable Gemini model found for generation with your API key. Please check available models on Google AI Studio.")
         return text_content
 
-
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(model_name) # Use the dynamically found model name
+        model = genai.GenerativeModel(model_name)
         
         prompt = generate_prompt(section_name, text_content, tone)
         
-        # Using generate_content for direct text generation
         response = model.generate_content(
             prompt,
             safety_settings={
@@ -170,7 +158,6 @@ def enhance_content_with_gemini(section_name, text_content, tone, api_key):
             }
         )
         
-        # Accessing the text from the response
         if response and response.parts:
             enhanced_text = ""
             for part in response.parts:
@@ -186,10 +173,9 @@ def enhance_content_with_gemini(section_name, text_content, tone, api_key):
         if "API key not valid" in error_message or "Authentication error" in error_message:
             st.error("🚨 Gemini API Key Invalid: Please check your API key and try again.")
         elif "quota" in error_message or "rate limit" in error_message:
-            # More specific message for quota issues
             st.error("🚨 Gemini API Quota Exceeded or Rate Limited: You've hit your usage limits. Please wait a few minutes and try again, or check your usage on [Google AI Studio](https://makersuite.google.com/app/apikey).")
-        elif "404" in error_message and "models/" in error_message: # Catch specific model not found errors
+        elif "404" in error_message and "models/" in error_message:
             st.error(f"🚨 Gemini Model Not Found or Not Supported: The model '{model_name}' might be unavailable or deprecated for your API key. Please try regenerating to select another suitable model or check Google AI Studio for available models.")
         else:
             st.error(f"🚨 An unexpected error occurred during AI enhancement for {section_name}: {e}")
-        return text_content # Always return original content on error
+        return text_content

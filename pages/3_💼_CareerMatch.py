@@ -27,7 +27,7 @@ st.divider()
 uploaded_file = st.file_uploader("Upload your resume (PDF or DOCX)", type=["pdf", "docx"])
 
 if uploaded_file is not None:
-    with st.spinner("Analyzing your resume and finding job recommendations..."):
+    with st.spinner("Analyzing your resume..."):
         file_type = uploaded_file.type  # MIME type
 
         if file_type == "application/pdf":
@@ -90,14 +90,10 @@ if uploaded_file is not None:
     topNJobs = st.slider("", min_value=1, max_value=20, value=5, key="topNJobs", label_visibility="collapsed")
     st.divider()
     
-    # You might want another spinner specifically for job recommendation if it's a separate heavy step
-    # For simplicity, putting it here. If `recommend_top_jobs` is fast, this might not be strictly needed.
-    # If `recommend_top_jobs` involves heavy computation (e.g., loading large models or performing complex similarity calculations),
-    # you might wrap it in its own spinner.
-    # For now, it proceeds directly after `topNJobs` is selected.
+    with st.spinner("Finding suitable jobs for you..."):    
+        recommended_jobs = jobRec.recommend_top_jobs(skills, topNJobs)
     
-    recommended_jobs = jobRec.recommend_top_jobs(skills, topNJobs)
-    
+    # Display Suggestions
     st.markdown("## 🧭 Career Suggestions")
     st.markdown("<br>", unsafe_allow_html=True)
     if recommended_jobs:

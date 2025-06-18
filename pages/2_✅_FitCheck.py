@@ -1,6 +1,5 @@
 import streamlit as st
 import spacy
-import time # You can remove this import if time.sleep is no longer used anywhere else
 import ui.render_footer as footer
 import preprocessor.parser as parser
 from preprocessor.skills import extract_skills_fuzzy, extract_soft_skills_fuzzy, weighted_skill_analysis
@@ -35,8 +34,6 @@ if "resume_text" not in st.session_state:
 resume_file = st.file_uploader("Upload your resume (PDF or DOCX)", type=["pdf", "docx"])
 if resume_file:
     file_type = resume_file.type
-    # It might be beneficial to put a small spinner here for file reading if files are very large
-    # but for typical resumes, it's usually fast enough not to need it.
     if file_type == "application/pdf":
         st.session_state.resume_text = parser.extract_text_from_pdf(resume_file.read())
     elif file_type in ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]:
@@ -78,8 +75,7 @@ elif selected_tab == "✍️ Paste Job Description":
 # Proceed if both inputs present
 if st.session_state.resume_text and jd_text:
     st.divider()
-    with st.spinner("Analyzing resume and job description..."): # More descriptive message
-        # Removed time.sleep(1) here
+    with st.spinner("Analyzing resume and job description..."):        
         
         # Load spacy model
         try:
@@ -120,7 +116,7 @@ if st.session_state.resume_text and jd_text:
         c_m, i_m, o_m = categorize(matched_hard)
         c_x, i_x, o_x = categorize(missing_hard)
 
-    # Display Results (outside the spinner)
+    # Display Results
     st.header("📊 FitCheck Score Breakdown")
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown(f"### 🎯 Final Score: <span style='font-weight:normal'>{final_score}%</span>", unsafe_allow_html=True)

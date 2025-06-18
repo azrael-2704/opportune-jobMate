@@ -8,8 +8,6 @@ from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.enum.style import WD_STYLE_TYPE
 import io
 
-# --- Helper Functions ---
-
 # Stores the calculated right margin end for consistent tab stop placement
 global_margin_end = None
 
@@ -60,7 +58,7 @@ def _get_or_create_hyperlink_style(d):
     """Ensures the 'Hyperlink' character style exists in the document.
         If missing, it creates a default version consistent with Word 2019's default theme."""
     if "Hyperlink" not in d.styles:
-        # Ensures a 'Default Character Font' style exists, as 'Hyperlink' often inherits from it
+        # Ensures a 'Default Character Font' style exists
         if "Default Character Font" not in d.styles:
             default_char_style = d.styles.add_style("Default Character Font",
                                                      WD_STYLE_TYPE.CHARACTER,
@@ -82,7 +80,6 @@ def _get_or_create_hyperlink_style(d):
 
     return "Hyperlink"
 
-# Corrected _add_hyperlink function
 def _add_hyperlink(doc_obj, paragraph, url, text, size=10):
     """
     Adds a clickable hyperlink to a given paragraph with specified text and font size.
@@ -95,16 +92,12 @@ def _add_hyperlink(doc_obj, paragraph, url, text, size=10):
         run.font.name = 'Cambria'
         return run
 
-    # Creates an external relationship to the URL within the document's XML.
-    # This generates a unique relationship ID (r:id) for the hyperlink.
     r_id = paragraph.part.relate_to(url, RT.HYPERLINK, is_external=True)
 
     # Creates the <w:hyperlink> XML element, which is the container for the clickable text.
     hyperlink_element = OxmlElement('w:hyperlink')
     hyperlink_element.set(qn('r:id'), r_id) # Links the hyperlink element to the external relationship
 
-    # Adds a new run to the paragraph. This run will contain the visible text of the hyperlink.
-    # We then detach this run's XML element to insert it within the <w:hyperlink> element.
     new_run = paragraph.add_run(text)
     
     # Applies the 'Hyperlink' style to the run, setting its default appearance (blue, underlined).
@@ -116,26 +109,16 @@ def _add_hyperlink(doc_obj, paragraph, url, text, size=10):
     new_run.font.color.rgb = RGBColor(0x05, 0x63, 0xC1)
     new_run.font.underline = True
 
-    # Accesses the run's formatting properties (<w:rPr> XML element) and adds <w:noProof>.
-    # This tag tells Word to skip spell-checking and grammar-checking for this run, common for URLs.
     rPr = new_run._element.get_or_add_rPr()
     no_proof = OxmlElement('w:noProof')
     rPr.append(no_proof)
 
-    # Retrieves the parent XML element of the run (which is the paragraph's XML element).
-    parent_element = new_run._element.getparent()
-    
-    # Removes the run's XML element from its current position directly within the paragraph.
+    parent_element = new_run._element.getparent()    
     parent_element.remove(new_run._element)
-    
-    # Appends the run's XML element (which now has all its formatting and text) inside the <w:hyperlink> element.
     hyperlink_element.append(new_run._element)
-    
-    # Appends the complete <w:hyperlink> element (containing the run) back to the paragraph's XML element.
-    # This effectively makes the text within 'new_run' clickable and formatted as a hyperlink.
     parent_element.append(hyperlink_element)
 
-    return new_run # Returns the run object for any potential further manipulation
+    return new_run
 
 
 def _add_left_right_paragraph(doc_obj, left_content, right_display_text, right_url=None, left_size=10, right_size=10):
@@ -189,7 +172,6 @@ def _add_bullet_point(doc_obj, text):
         run.font.name = 'Cambria'
         run.font.size = Pt(10)
 
-# --- Section Functions ---
 
 def add_header_section(doc, name, title, location, email, phone, website, linkedin, github):
     """Adds the resume header including name, title, and all contact information."""
@@ -238,8 +220,8 @@ def add_header_section(doc, name, title, location, email, phone, website, linked
         for i, part in enumerate(contact_parts):
             if part.startswith("http://") or part.startswith("https://"):
                 # Check if this specific part is the main website URL
-                if part == website.strip(): # Check if it's the website passed to the function
-                    display_text_for_link = "Portfolio Website" # THIS IS THE CHANGE
+                if part == website.strip():
+                    display_text_for_link = "Portfolio Website"
                 else:
                     # For any other http/https link in contact parts (e.g., if you added another link type later)
                     display_text_for_link = part.replace("http://", "").replace("https://", "").replace("www.", "")
@@ -305,32 +287,28 @@ def add_education_section(doc, education_entries):
     if valid_education_entries:
         _add_section_title(doc, "Education")
         for edu in valid_education_entries:
-            # Prepares the left-aligned content (University, Degree, Location) with specific formatting.
             left_edu_content = []
             if edu['university'].strip():
-                left_edu_content.append((edu['university'].strip(), True, False)) # University is bold
+                left_edu_content.append((edu['university'].strip(), True, False))
 
             if edu['degree'].strip():
                 if left_edu_content and not left_edu_content[-1][0].endswith(', '):
-                    left_edu_content.append((", ", False, False)) # Adds a comma separator
-                left_edu_content.append((edu['degree'].strip(), False, False)) # Degree is unbold
+                    left_edu_content.append((", ", False, False))
+                left_edu_content.append((edu['degree'].strip(), False, False))
 
             if edu['location'].strip():
                 if left_edu_content and not left_edu_content[-1][0].endswith(' - '):
-                    left_edu_content.append((" - ", False, False)) # Adds a hyphen separator
-                left_edu_content.append((edu['location'].strip(), False, True)) # Location is italicized
+                    left_edu_content.append((" - ", False, False))
+                left_edu_content.append((edu['location'].strip(), False, True))
             
-            # Prepares the right-aligned dates content.
             right_edu_text_parts = []
             if edu['start_date'].strip(): right_edu_text_parts.append(edu['start_date'].strip())
             if edu['end_date'].strip(): right_edu_text_parts.append(edu['end_date'].strip())
             right_edu_text = " - ".join(right_edu_text_parts)
 
-            # Adds the formatted university/degree/location and dates on one line.
             if left_edu_content or right_edu_text:
                 _add_left_right_paragraph(doc, left_edu_content, right_edu_text, None, left_size=10, right_size=10)
             
-            # Adds GPA if provided, italicized.
             gpa_text = edu['gpa'].strip()
             if gpa_text:
                 gpa_para = doc.add_paragraph()
@@ -342,7 +320,6 @@ def add_education_section(doc, education_entries):
                 gpa_run.font.name = 'Cambria'
                 gpa_run.italic = True
             
-            # Adds relevant coursework if provided.
             coursework_text = edu['coursework'].strip()
             if coursework_text:
                 coursework_para = doc.add_paragraph()
@@ -365,17 +342,17 @@ def add_work_experience_section(doc, experiences):
             # Prepares left-aligned content (Job Title, Company, Location) with formatting.
             left_exp_content = []
             if exp['job_title'].strip():
-                left_exp_content.append((exp['job_title'].strip(), True, False)) # Job Title is bold
+                left_exp_content.append((exp['job_title'].strip(), True, False))
             
             if exp['company'].strip():
                 if left_exp_content and not left_exp_content[-1][0].endswith(', '):
                     left_exp_content.append((", ", False, False))
-                left_exp_content.append((exp['company'].strip(), False, False)) # Company is unbolded
+                left_exp_content.append((exp['company'].strip(), False, False))
             
             if exp['location'].strip():
                 if left_exp_content and not left_exp_content[-1][0].endswith(' - '):
                     left_exp_content.append((" - ", False, False))
-                left_exp_content.append((exp['location'].strip(), False, True)) # Location is italicized
+                left_exp_content.append((exp['location'].strip(), False, True))
 
             # Prepares right-aligned dates content.
             right_exp_text_parts = []
@@ -383,10 +360,8 @@ def add_work_experience_section(doc, experiences):
             if exp['end_date'].strip(): right_exp_text_parts.append(exp['end_date'].strip())
             right_exp_text = " - ".join(right_exp_text_parts)
 
-            # Adds the formatted job title/company/location and dates on one line.
             _add_left_right_paragraph(doc, left_exp_content, right_exp_text, None, left_size=10, right_size=10)
             
-            # --- START MODIFICATION FOR RESPONSIBILITIES ---
             responsibilities_data = exp.get('responsibilities', [])
             
             # Ensure responsibilities_data is always a list of strings for iteration
@@ -402,7 +377,6 @@ def add_work_experience_section(doc, experiences):
             # Adds each responsibility as a bullet point.
             for desc in responsibilities_list:
                 if desc: # Check again after stripping
-                    # Special handling for O(n^2) and O(n log n) formatting.
                     if "O(n²)" in desc or "O(n log n)" in desc:
                         p = doc.add_paragraph(style='List Bullet')
                         p.paragraph_format.left_indent = Inches(0.25)
@@ -423,13 +397,11 @@ def add_work_experience_section(doc, experiences):
                             if i < len(parts_n2) - 1:
                                 run_n2 = p.add_run('O(n²)')
                         
-                        # Ensures all runs within this special paragraph get the Cambria 10pt font.
                         for run_item in p.runs:
                             run_item.font.name = 'Cambria'
                             run_item.font.size = Pt(10)
                     else:
                         _add_bullet_point(doc, desc)
-            # --- END MODIFICATION FOR RESPONSIBILITIES ---
 
 
 def add_projects_section(doc, projects):
@@ -440,7 +412,7 @@ def add_projects_section(doc, projects):
         _add_section_title(doc, "Projects")
         for proj in valid_projects:
             # Adds the Project Title (left) and Live Demo Link (right).
-            left_proj_title_content = [(proj['title'].strip(), True, False)] # Project title is bold
+            left_proj_title_content = [(proj['title'].strip(), True, False)]
             deployment_url = proj.get('deployment', '').strip()
             deployment_display_text = "Live Demo" if deployment_url else ""
             
@@ -459,24 +431,18 @@ def add_projects_section(doc, projects):
                 if left_tech_stack_content or github_url:
                     _add_left_right_paragraph(doc, left_tech_stack_content, github_display_text, github_url, left_size=10, right_size=10)
 
-            # --- START MODIFICATION FOR PROJECT DESCRIPTION ---
             project_description_data = proj.get('description') # Get the raw data
 
-            # Ensure project_description_data is always a list of strings for iteration
             if isinstance(project_description_data, str):
-                # If it's a single string, split it by lines and clean
                 description_list = [line.strip() for line in project_description_data.splitlines() if line.strip()]
             elif isinstance(project_description_data, list):
-                # If it's already a list, ensure elements are strings and not empty
                 description_list = [str(item).strip() for item in project_description_data if str(item).strip()]
             else:
-                description_list = [] # Default to empty list if unexpected type
+                description_list = []
 
-            # Adds project description as bullet points.
             for desc_line in description_list:
-                if desc_line: # Check after stripping
+                if desc_line:
                     _add_bullet_point(doc, desc_line)
-            # --- END MODIFICATION FOR PROJECT DESCRIPTION ---
 
 def add_skills_section(doc, technical_skills, soft_skills):
     """Adds the Skills section, categorizing technical and soft skills."""
@@ -490,12 +456,12 @@ def add_skills_section(doc, technical_skills, soft_skills):
             tech_para.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
             tech_para.paragraph_format.space_after = Pt(2)
             tech_para.paragraph_format.space_before = Pt(2)
-            tech_para.add_run("Technical Skills: ").bold = True # Bold "Technical Skills:" label
+            tech_para.add_run("Technical Skills: ").bold = True
             tech_para.runs[0].font.size = Pt(10)
             tech_para.runs[0].font.name = 'Cambria'
             
             if cleaned_tech_skills:
-                tech_para.add_run("• " + " • ".join(cleaned_tech_skills)) # Adds skills separated by bullet points
+                tech_para.add_run("• " + " • ".join(cleaned_tech_skills))
             tech_para.runs[-1].font.size = Pt(10)
             tech_para.runs[-1].font.name = 'Cambria'
 
@@ -504,12 +470,12 @@ def add_skills_section(doc, technical_skills, soft_skills):
             soft_para.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
             soft_para.paragraph_format.space_after = Pt(2)
             soft_para.paragraph_format.space_before = Pt(2)
-            soft_para.add_run("Soft Skills: ").bold = True # Bold "Soft Skills:" label
+            soft_para.add_run("Soft Skills: ").bold = True
             soft_para.runs[0].font.size = Pt(10)
             soft_para.runs[0].font.name = 'Cambria'
             
             if cleaned_soft_skills:
-                soft_para.add_run("• " + " • ".join(cleaned_soft_skills)) # Adds skills separated by bullet points
+                soft_para.add_run("• " + " • ".join(cleaned_soft_skills))
             soft_para.runs[-1].font.size = Pt(10)
             soft_para.runs[-1].font.name = 'Cambria'
 
@@ -520,17 +486,15 @@ def add_certifications_training_section(doc, certifications):
     if valid_certifications:
         _add_section_title(doc, "Certifications and Training")
         for cert in valid_certifications:
-            # Prepares left content (Title, Issuer) with formatting.
             left_cert_content = []
             if cert['title'].strip():
-                left_cert_content.append((cert['title'].strip(), True, False)) # Title is bold
+                left_cert_content.append((cert['title'].strip(), True, False))
 
             if cert.get('issuer', '').strip():
                 if left_cert_content and not left_cert_content[-1][0].endswith(' '):
                     left_cert_content.append((" ", False, False))
-                left_cert_content.append((f"({cert['issuer'].strip()})", False, False)) # Issuer is in parentheses
-            
-            # Prepares right content (link).
+                left_cert_content.append((f"({cert['issuer'].strip()})", False, False))
+
             cert_url = cert.get('link', '').strip()
             cert_display_text = "View Certificate" if cert_url else ""
 
@@ -560,8 +524,6 @@ def add_hobbies_section(doc, hobbies):
             p.runs[0].font.size = Pt(10)
             p.runs[0].font.name = 'Cambria'
 
-# --- Main Resume Generation Function ---
-
 def generate_structured_resume(data, template_path=None):
     """
     Generates a complete resume document in DOCX format based on the provided structured data.
@@ -580,7 +542,7 @@ def generate_structured_resume(data, template_path=None):
     projects = data['projects']
     skills = data['skills']
     certifications = data['certifications']
-    extras = data['achievements_hobbies'] # Corrected key name
+    extras = data['achievements_hobbies']
 
     # Calls various section-specific functions to populate the document.
     add_header_section(doc,
@@ -611,5 +573,5 @@ def generate_structured_resume(data, template_path=None):
     # without needing to save it to a physical file first.
     bio = io.BytesIO()
     doc.save(bio)
-    bio.seek(0) # Resets the buffer's position to the beginning
+    bio.seek(0)
     return bio

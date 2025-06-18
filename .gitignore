@@ -1,8 +1,8 @@
 __pycache__/
 *.pyc
-.env
+*.env
 *.pdf
 output/
 .vscode/
-.yml
+*.yml
 pfp.png

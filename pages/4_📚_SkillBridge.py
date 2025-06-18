@@ -27,7 +27,7 @@ st.divider()
 
 resume_file = st.file_uploader("Upload your resume (PDF or DOCX)", type=["pdf", "docx"])
 
-# --- Load Job Roles ---
+# Load Job Roles
 @st.cache_data
 def load_job_roles():
     with open("data/dataset/job_to_skill.json", "r") as f:
@@ -36,7 +36,7 @@ def load_job_roles():
 job_skills_map = load_job_roles()
 available_roles = sorted(job_skills_map.keys())
 
-# --- Resume Extraction and Analysis ---
+# Resume Extraction and Analysis
 if resume_file:
     with st.spinner("Analyzing your resume and extracting skills..."):
         if resume_file.type == "application/pdf":
@@ -55,7 +55,7 @@ if resume_file:
         resume_doc = nlp(resume_text)
         extracted_skills = set(extract_skills_fuzzy(resume_doc))
 
-    # --- Role Selection ---
+    # Role Selection
     st.divider()
     selected_role = st.selectbox("Select a target job role:", available_roles)
     if selected_role:

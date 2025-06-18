@@ -1,5 +1,5 @@
 import streamlit as st  # type: ignore
-from builder import form_inputs, generator_standard, enhancer
+from builder import form_inputs, generator_standard, resume_enhancer
 import ui.render_footer as footer
 import re
 from io import BytesIO
@@ -39,7 +39,7 @@ st.divider()
 # Gemini API Key Input and Tone Control
 st.header("🤖 AI Enhancement Options")
 st.write("")
-gemini_api_key = enhancer.get_gemini_api_key() # Get API key using the enhancer module
+gemini_api_key = resume_enhancer.get_gemini_api_key() # Get API key using the enhancer module
 st.write("")
 selected_tone = st.selectbox(
     "Select Enhancement Tone:",
@@ -49,7 +49,7 @@ selected_tone = st.selectbox(
 )
 st.divider()
 
-# Step 2: Display dynamic form based on counts
+# Display dynamic form based on counts
 st.header("✒️ Your Details")
 st.write("")
 with st.form("resume_form"):
@@ -68,12 +68,12 @@ with st.form("resume_form"):
     with col_buttons[1]:
         generate_ai_enhanced = st.form_submit_button("✨ Generate AI-Enhanced Resume", use_container_width=True)
 
-# Step 3: Validation logic before rendering resume
+# Validation logic before rendering resume
 if generate_standard or generate_ai_enhanced:
     errors = []
     warnings = []
 
-    # Required field validation
+    # Personal Info Check
     if not personal["name"].strip():
         errors.append("❌ Full Name is required.")
     if not personal["email"].strip():
@@ -95,7 +95,7 @@ if generate_standard or generate_ai_enhanced:
     if not summary.strip():
         errors.append("❌ Professional Summary is required.")
 
-    #Education Check
+    # Education Check
     for i in range (num_edu):
         if not education[i]["university"]:
             errors.append(f"❌ University {i + 1} is required.")
@@ -116,8 +116,7 @@ if generate_standard or generate_ai_enhanced:
             errors.append(f"❌ Company {i + 1} is required.")
         if not experience[i]["end_date"]:
             errors.append(f"❌ Job End Date {i + 1} is required.")
-        # Note: Responsibilities are handled differently now to ensure string format for generator.py
-        if not experience[i]["responsibilities"]: # This will be a list from form_inputs
+        if not experience[i]["responsibilities"]:
             warnings.append(f"⚠️ Adding your Job Responsibilities and Challenges {i + 1} is recommended.")
     
     # Project Check
@@ -130,7 +129,7 @@ if generate_standard or generate_ai_enhanced:
             warnings.append(f"⚠️ Adding your Repository Link {i + 1} is recommended.")
         if not projects[i]["deployment"]:
             warnings.append(f"⚠️ Adding your Deployment Link {i + 1} is recommended.")
-        if not projects[i]["description"].strip(): # description is a string from form_inputs
+        if not projects[i]["description"].strip():
             errors.append(f"❌ Project Description {i + 1} is required.")
 
     # Skills Check
@@ -160,47 +159,42 @@ if generate_standard or generate_ai_enhanced:
         st.error("Please fix the following before generating your resume:\n\n" + "\n\n".join(f"{e}" for e in errors))
         st.write("")
         st.warning("Please consider adding the following for an ATS-friendly resume:\n\n" + "\n\n".join(f"{w}" for w in warnings))
-    elif warnings: # This block is for when there are only warnings, allowing generation
+    elif warnings:
         st.markdown("<br>", unsafe_allow_html=True)
         st.warning("Please consider adding the following for an ATS-friendly resume:\n\n" + "\n\n".join(f"{w}" for w in warnings))
-    elif errors: # Only errors, stop generation
+    elif errors:
         st.markdown("<br>", unsafe_allow_html=True)
         st.error("Please fix the following before generating your resume:\n\n" + "\n\n".join(f"{e}" for e in errors))
-        st.stop() # Stop execution if there are errors
+        st.stop()
 
     if not errors:
         st.divider()
-
-        # Wrap the AI enhancement block with st.spinner
         with st.spinner("AI is enhancing your resume... This might take a moment."):
             processed_personal = personal
             processed_summary = summary
             processed_education = education
-            processed_skills = skills # Will be updated if AI enhanced
+            processed_skills = skills
             processed_certifications = certifications
-            processed_extras = extras # Will be updated if AI enhanced
-            
-            # Initialize processed_experience and processed_projects lists
+            processed_extras = extras
+
             processed_experience = []
             processed_projects = []
 
             # Process Summary
             if generate_ai_enhanced and gemini_api_key:
-                processed_summary = enhancer.enhance_content_with_gemini(
+                processed_summary = resume_enhancer.enhance_content_with_gemini(
                     "professional summary", summary, selected_tone, gemini_api_key
                 )
                 time.sleep(3) # Add delay to respect API rate limits
 
             # Process Work Experience
             for i, exp_entry in enumerate(experience):
-                current_exp = exp_entry.copy() # Create a copy to modify
+                current_exp = exp_entry.copy()
                 
-                # Ensure responsibilities are processed consistently for generator_standard.py
                 if generate_ai_enhanced and gemini_api_key:
-                    enhanced_resp_text = enhancer.enhance_content_with_gemini(
+                    enhanced_resp_text = resume_enhancer.enhance_content_with_gemini(
                         "job responsibility", "\n".join(current_exp["responsibilities"]), selected_tone, gemini_api_key
                     )
-                    # The enhancer now provides pure bullet points, one per line. Split by new line.
                     current_exp["responsibilities"] = [line.strip() for line in enhanced_resp_text.split('\n') if line.strip()] 
                 elif isinstance(current_exp["responsibilities"], list):
                     current_exp["responsibilities"] = [r.strip() for r in current_exp["responsibilities"] if r.strip()] # Clean list elements
@@ -211,18 +205,13 @@ if generate_standard or generate_ai_enhanced:
 
             # Process Projects
             for i, proj_entry in enumerate(projects):
-                current_proj = proj_entry.copy() # Create a copy to modify
+                current_proj = proj_entry.copy()
 
-                # Ensure description is processed consistently for generator_standard.py
                 if generate_ai_enhanced and gemini_api_key:
-                    enhanced_desc_text = enhancer.enhance_content_with_gemini(
+                    enhanced_desc_text = resume_enhancer.enhance_content_with_gemini(
                         "project description", current_proj["description"], selected_tone, gemini_api_key
                     )
-                    # The enhancer now provides pure bullet points, one per line. Split by new line.
                     current_proj["description"] = [line.strip() for line in enhanced_desc_text.split('\n') if line.strip()]
-                # If not AI enhanced, description is already a string from form_inputs.
-                # If it was entered as multiple lines in the text area, it might already be split.
-                # Ensure it's a list for consistency with enhanced output.
                 elif isinstance(current_proj["description"], str):
                     current_proj["description"] = [line.strip() for line in current_proj["description"].split('\n') if line.strip()]
 
@@ -234,7 +223,7 @@ if generate_standard or generate_ai_enhanced:
             if generate_ai_enhanced and gemini_api_key:
                 # Combine technical and soft skills into a single string for enhancement
                 all_skills_text = ", ".join(skills["technical"] + skills["soft"])
-                enhanced_skills_string = enhancer.enhance_content_with_gemini(
+                enhanced_skills_string = resume_enhancer.enhance_content_with_gemini(
                     "skills section", all_skills_text, selected_tone, gemini_api_key
                 )
                 # Parse the specific output format: "Technical Skills: ..., Soft Skills: ..."
@@ -252,7 +241,7 @@ if generate_standard or generate_ai_enhanced:
                 processed_skills = {"technical": tech_skills, "soft": soft_skills}
                 time.sleep(3) # Add delay after skills enhancement
             else:
-                # Ensure skills are lists for generator, even if not enhanced
+                # Ensure skills are lists for generator
                 processed_skills["technical"] = [s.strip() for s in processed_skills["technical"] if s.strip()]
                 processed_skills["soft"] = [s.strip() for s in processed_skills["soft"] if s.strip()]
 
@@ -261,19 +250,15 @@ if generate_standard or generate_ai_enhanced:
             if generate_ai_enhanced and gemini_api_key:
                 # Join all achievements into a single string for enhancement
                 all_achievements_text = "\n".join(extras["achievements"])
-                enhanced_achievements_string = enhancer.enhance_content_with_gemini(
+                enhanced_achievements_string = resume_enhancer.enhance_content_with_gemini(
                     "achievements", all_achievements_text, selected_tone, gemini_api_key
                 )
-                # The enhancer function is designed to return a comma-separated string for achievements
-                # Convert back to a list
                 processed_extras["achievements"] = [a.strip() for a in enhanced_achievements_string.split(',') if a.strip()]
-                # No need for a final sleep if no more calls follow immediately
             else:
-                # Ensure achievements are lists for generator, even if not enhanced
                 processed_extras["achievements"] = [a.strip() for a in processed_extras["achievements"] if a.strip()]
 
 
-        # Assemble data dictionary for generator (outside the spinner block, as processing is done)
+        # Assemble data dictionary for generator
         data = {
             "personal": processed_personal,
             "summary": processed_summary,
@@ -297,7 +282,6 @@ if generate_standard or generate_ai_enhanced:
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.success("Resume generated successfully!")
 
-            #st.markdown("<br><br>", unsafe_allow_html=True)
             st.divider()
             st.write("")
             st.download_button(
