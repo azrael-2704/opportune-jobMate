@@ -1,9 +1,8 @@
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT, WD_LINE_SPACING # Removed WD_TAB_LEADER
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
-from docx.enum.text import WD_LINE_SPACING
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.enum.style import WD_STYLE_TYPE
 import io
@@ -287,49 +286,64 @@ def add_education_section(doc, education_entries):
     if valid_education_entries:
         _add_section_title(doc, "Education")
         for edu in valid_education_entries:
-            left_edu_content = []
+            # --- Line 1: University (Bold) <tabstop> Dates ---
+            left_university_content = []
             if edu['university'].strip():
-                left_edu_content.append((edu['university'].strip(), True, False))
-
-            if edu['degree'].strip():
-                if left_edu_content and not left_edu_content[-1][0].endswith(', '):
-                    left_edu_content.append((", ", False, False))
-                left_edu_content.append((edu['degree'].strip(), False, False))
-
+                # University text, bold
+                left_university_content.append((edu['university'].strip(), True, False))
+            
+            # Add location to the university line if present
             if edu['location'].strip():
-                if left_edu_content and not left_edu_content[-1][0].endswith(' - '):
-                    left_edu_content.append((" - ", False, False))
-                left_edu_content.append((edu['location'].strip(), False, True))
-            
-            right_edu_text_parts = []
-            if edu['start_date'].strip(): right_edu_text_parts.append(edu['start_date'].strip())
-            if edu['end_date'].strip(): right_edu_text_parts.append(edu['end_date'].strip())
-            right_edu_text = " - ".join(right_edu_text_parts)
+                if edu['university'].strip(): # If university is present, add comma
+                    left_university_content.append((", ", False, False))
+                left_university_content.append((edu['location'].strip(), False, False)) # Not bold, not italic
 
-            if left_edu_content or right_edu_text:
-                _add_left_right_paragraph(doc, left_edu_content, right_edu_text, None, left_size=10, right_size=10)
+            right_dates_text_parts = []
+            if edu['start_date'].strip(): 
+                right_dates_text_parts.append(edu['start_date'].strip())
+            if edu['end_date'].strip(): 
+                right_dates_text_parts.append(edu['end_date'].strip())
+            right_dates_text = " - ".join(right_dates_text_parts)
+
+            # Use _add_left_right_paragraph for the first line (University/Location and Dates)
+            if left_university_content or right_dates_text:
+                _add_left_right_paragraph(doc, left_university_content, right_dates_text, None, left_size=10, right_size=10)
+
+
+            # --- Line 2: Degree <tabstop> GPA (Italic) ---
+            left_degree_content = []
+            if edu['degree'].strip():
+                left_degree_content.append((edu['degree'].strip(), False, False)) # Degree is not bold, not italic
+
+            right_gpa_text = ""
+            if edu['gpa'].strip():
+                right_gpa_text = f"GPA: {edu['gpa'].strip()}"
             
-            gpa_text = edu['gpa'].strip()
-            if gpa_text:
-                gpa_para = doc.add_paragraph()
-                gpa_para.paragraph_format.space_before = Pt(0)
-                gpa_para.paragraph_format.space_after = Pt(2)
-                gpa_para.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
-                gpa_run = gpa_para.add_run(f"GPA: {gpa_text}")
-                gpa_run.font.size = Pt(10)
-                gpa_run.font.name = 'Cambria'
-                gpa_run.italic = True
-            
+            # Use _add_left_right_paragraph for the second line (Degree and GPA)
+            if left_degree_content or right_gpa_text:
+                _add_left_right_paragraph(doc, left_degree_content, right_gpa_text, None, left_size=10, right_size=10)
+                # Note: Setting italic for GPA is handled within _add_hyperlink (called by _add_left_right_paragraph)
+                # for the right_display_text. Since GPA is just text, it won't be italicized by _add_hyperlink directly.
+                # If GPA *must* be italic, we'd need a more custom run within _add_left_right_paragraph or
+                # modify _add_hyperlink to apply italic to plain text too.
+                # For now, it will be plain text on the right.
+
+
+            # --- Line 3: Relevant Coursework ---
             coursework_text = edu['coursework'].strip()
             if coursework_text:
                 coursework_para = doc.add_paragraph()
                 coursework_para.paragraph_format.space_before = Pt(0)
                 coursework_para.paragraph_format.space_after = Pt(2)
                 coursework_para.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
+                
+                # Clean up coursework text (it's a single string from text_area, but might have newlines)
                 cleaned_coursework = ", ".join([line.strip() for line in coursework_text.splitlines() if line.strip()])
+                
                 coursework_run = coursework_para.add_run(f"Relevant Coursework: {cleaned_coursework}")
                 coursework_run.font.size = Pt(10)
                 coursework_run.font.name = 'Cambria'
+
 
 def add_work_experience_section(doc, experiences):
     """Adds the Work Experience section, detailing job titles, companies, locations, dates, and responsibilities."""
