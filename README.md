@@ -51,8 +51,16 @@ Opportune: JobMate is a Streamlit-based suite for job seekers. It helps users an
 - Export to HTML or DOCX
 - Themes: Modern, Minimal, Harvard, Standard
 
-### 5. ATS Tune-Up (Planned)  
-Optimize resumes for ATS parsing by improving keyword targeting and structure.
+### 5. ATS Tune-Up  
+**Purpose**: Optimize resumes for ATS compatibility using rule-based and AI-powered evaluation.
+
+**Features**:
+- Upload resume
+- Run local analysis across 13 key ATS checks
+- AI-based Gemini resume analysis with structured, section-wise feedback
+- Visual breakdown of issues and highlights (warnings and successes)
+- Gemini API integration with key input and fallback handling
+- Side-by-side Local vs AI analysis options
 
 ### 6. AutoApply (Planned)  
 Use browser automation to fill job forms on platforms like LinkedIn, Unstop, Glassdoor.
