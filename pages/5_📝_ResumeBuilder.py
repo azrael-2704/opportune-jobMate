@@ -178,7 +178,6 @@ if generate_standard or generate_ai_enhanced:
             processed_skills = skills
             processed_certifications = certifications
             processed_extras = extras
-
             processed_experience = []
             processed_projects = []
 
@@ -188,7 +187,7 @@ if generate_standard or generate_ai_enhanced:
                 generate_ai_enhanced = False # Disable enhancement for this run
 
             # Process Summary
-            if generate_ai_enhanced and gemini_api_key:
+            if generate_ai_enhanced and gemini_api_key and summary:
                 processed_summary = resume_enhancer.enhance_content_with_gemini(
                     "professional summary", summary, selected_tone, gemini_api_key
                 )
@@ -198,7 +197,7 @@ if generate_standard or generate_ai_enhanced:
             for i, exp_entry in enumerate(experience):
                 current_exp = exp_entry.copy()
                 
-                if generate_ai_enhanced and gemini_api_key:
+                if generate_ai_enhanced and gemini_api_key and experience[i]:
                     enhanced_resp_text = resume_enhancer.enhance_content_with_gemini(
                         "job responsibility", "\n".join(current_exp["responsibilities"]), selected_tone, gemini_api_key
                     )
@@ -214,7 +213,7 @@ if generate_standard or generate_ai_enhanced:
             for i, proj_entry in enumerate(projects):
                 current_proj = proj_entry.copy()
 
-                if generate_ai_enhanced and gemini_api_key:
+                if generate_ai_enhanced and gemini_api_key and projects[i]:
                     enhanced_desc_text = resume_enhancer.enhance_content_with_gemini(
                         "project description", current_proj["description"], selected_tone, gemini_api_key
                     )
@@ -227,7 +226,7 @@ if generate_standard or generate_ai_enhanced:
                     time.sleep(3) # Add delay after each project enhancement
 
             # Process Skills
-            if generate_ai_enhanced and gemini_api_key:
+            if generate_ai_enhanced and gemini_api_key and skills:
                 # Combine technical and soft skills into a single string for enhancement
                 all_skills_text = ", ".join(skills["technical"] + skills["soft"])
                 enhanced_skills_string = resume_enhancer.enhance_content_with_gemini(
@@ -254,7 +253,7 @@ if generate_standard or generate_ai_enhanced:
 
 
             # Process Achievements
-            if generate_ai_enhanced and gemini_api_key:
+            if generate_ai_enhanced and gemini_api_key and extras["achievements"]:
                 # Join all achievements into a single string for enhancement
                 all_achievements_text = "\n".join(extras["achievements"])
                 enhanced_achievements_string = resume_enhancer.enhance_content_with_gemini(
@@ -288,6 +287,9 @@ if generate_standard or generate_ai_enhanced:
             else:
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.success("Resume generated successfully!")
+            
+            if generate_ai_enhanced:
+                st.info("Kindly review your resume thoroughly if generated using AI. Sometimes it may add unrealistic or false statistics which should be ethically removed from the resume.")
 
             st.divider()
             st.write("")

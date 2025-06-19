@@ -62,13 +62,13 @@ def get_suitable_gemini_model(api_key):
 
     # Ordered list of preferred text-generation models
     preferred_models_order = [
-        "gemini-1.5-flash-latest", # Recommended for speed/cost
-        "gemini-1.5-pro-latest",   # More capable, higher cost
-        "gemini-1.0-pro",
-        "gemini-2.0-flash", # Newer stable release, potentially
-        "gemini-2.0-flash-lite", # Optimized for cost/latency
-        "gemini-pro" # Original, but often deprecated now
+        "gemini-2.5-flash",              #  Best balance of quality, speed, and cost
+        "gemini-1.5-flash-8b",           #  Budget-friendly small model with good capabilities
+        "gemini-2.0-flash",              #  Stable, older but still versatile
+        "gemini-2.0-flash-lite",         #  Lightweight fallback for quota-limited use
+        "gemini-1.5-flash-latest"
     ]
+
     
     selected_model = None
     for preferred_model_name in preferred_models_order:
@@ -116,13 +116,13 @@ def generate_prompt(section_name, text_content, tone="Professional"):
         return f"{base_prompt} Ensure it is between 30 to 70 words.\n\nHere is the summary:\n{text_content}\n\nEnhanced Professional Summary (30-70 words):"
     elif section_name == "job responsibility":
         # Request max 3 bullet points, without headers or extra formatting with estimated numeric statistics.
-        return f"Rewrite the following job responsibilities into a maximum of 3 concise, impactful bullet points. Each bullet point should start with a strong action verb and focus on quantifiable achievements. If specific numbers are not provided, estimate reasonable numeric statistics (e.g., 'increased efficiency by 20%', 'reduced errors by 15%') to demonstrate impact. Do NOT include any headers, introductory text, or concluding remarks. Provide ONLY the bullet points, one per line.\n\nHere are the job responsibilities:\n{text_content}\n\nEnhanced Responsibilities (max 3 bullet points with quantifiable results):"
+        return f"Rewrite the following job responsibilities into a maximum of 3 concise, impactful bullet points. Each bullet point should start with a strong action verb and focus on quantifiable achievements. If specific numbers are not provided, estimate reasonable numeric statistics (e.g., 'increased efficiency by 20%', 'reduced errors by 15%') to demonstrate impact. Do NOT include any headers, introductory text, or concluding remarks. Provide ONLY the bullet points, one per line.\n\nHere are the job responsibilities:\n{text_content}\n\nEnhanced Responsibilities (max 3 bullet points with quantifiable results). Just give plain text with no sort of formatting:"
     elif section_name == "project description":
         # Request max 3 bullet points, without headers or extra formatting with estimated numeric statistics.
-        return f"Rewrite the following project descriptions into a maximum of 3 concise, impactful bullet points. Each bullet point should start with a strong action verb and highlight contributions and results. If specific numbers are not provided, estimate reasonable numeric statistics (e.g., 'improved performance by 25%', 'handled 500+ users') to demonstrate impact. Do NOT include any headers, introductory text, or concluding remarks. Provide ONLY the bullet points, one per line.\n\nHere are the project descriptions:\n{text_content}\n\nEnhanced Project Descriptions (max 3 bullet points with quantifiable results):"
+        return f"Rewrite the following project descriptions into a maximum of 3 concise, impactful bullet points. Each bullet point should start with a strong action verb and highlight contributions and results. If specific numbers are not provided, estimate reasonable numeric statistics (e.g., 'improved performance by 25%', 'handled 500+ users') to demonstrate impact. Do NOT include any headers, introductory text, or concluding remarks. Provide ONLY the bullet points, one per line.\n\nHere are the project descriptions:\n{text_content}\n\nEnhanced Project Descriptions (max 3 bullet points with quantifiable results). Just give plain text with no sort of formatting:"
     elif section_name == "skills section":
         # Request specific format for skills: Technical Skills: ..., Soft Skills: ...
-        return f"From the following text, extract and categorize all relevant technical skills and soft skills. List 'Technical Skills' as a comma-separated string on one line, and 'Soft Skills' as a comma-separated string on the next line. Do NOT include any other text, headers, or formatting. Ensure no duplicate skills. If a category has no skills, just leave it blank after the colon.\n\nExample Output:\nTechnical Skills: Python, Java, AWS, SQL\nSoft Skills: Leadership, Communication, Problem-solving\n\nText to extract skills from:\n{text_content}\n\nEnhanced Skills Section:"
+        return f"From the following text, extract and categorize all relevant technical skills and soft skills. List 'Technical Skills' as a comma-separated string on one line, and 'Soft Skills' as a comma-separated string on the next line. Do NOT include any other text, headers, or formatting. Ensure no duplicate skills. Moreover, from the extracted skills, add more closely connected skills toh the list you return. If a category has no skills, just leave it blank after the colon.\n\nExample Output:\nTechnical Skills: Python, Java, AWS, SQL\nSoft Skills: Leadership, Communication, Problem-solving\n\nText to extract skills from:\n{text_content}\n\nEnhanced Skills Section:"
     elif section_name == "achievements":
         return f"Rewrite the following achievements into concise, keyword-rich, and impactful sentences. Focus on quantifiable results where possible. If an achievement is vague, make a reasonable professional interpretation. Separate each achievement sentence with a comma. Do NOT include any introductory or concluding sentences, just the comma-separated sentences.\n\nAchievements:\n{text_content}\n\nEnhanced Achievements:"
     else:
