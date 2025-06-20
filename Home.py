@@ -1,8 +1,9 @@
 import streamlit as st
 import ui.render_footer as footer
+import ui.render_header as header
 
 # Page configuration
-st.set_page_config(page_title="Home", page_icon="🏠", layout="centered", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Home", page_icon="🏠", layout="centered", initial_sidebar_state="collapsed")
 st.logo("ui/assets/header.png", size = "large", icon_image= "ui/assets/logo.png")
 
 # Sidebar configuration
@@ -10,10 +11,7 @@ st.sidebar.title("Home")
 st.sidebar.markdown("Welcome to the Opportune: JobMate Landing Page! Use the sidebar to navigate through the tools available.")
 
 # Header
-st.image("ui/assets/header.png", use_container_width=True)
-st.write("")
-st.caption("<p style='text-align: center;'>An intelligent tool to analyze your resume, match job roles, and evaluate job descriptions — all in one place</p>", unsafe_allow_html=True)
-st.divider()
+header.render_header()
 
 # Intro Section
 st.title("👋 Welcome to Opportune: JobMate")
