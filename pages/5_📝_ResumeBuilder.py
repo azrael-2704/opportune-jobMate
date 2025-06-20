@@ -1,6 +1,7 @@
 import streamlit as st  # type: ignore
 from builder import form_inputs, generator_standard, resume_enhancer
 import ui.render_footer as footer
+import ui.render_header as header
 import re
 from io import BytesIO
 import time # Import the time module for delays
@@ -10,10 +11,7 @@ st.set_page_config(page_title="ResumeBuilder", page_icon="📝", layout="centere
 st.logo("ui/assets/header.png", size="large", icon_image="ui/assets/logo.png")
 
 # Header
-st.image("ui/assets/header.png", use_container_width=True)
-st.write("")
-st.caption("<p style='text-align: center;'>An intelligent tool to analyze your resume, match job roles, and evaluate job descriptions — all in one place</p>", unsafe_allow_html=True)
-st.divider()
+header.render_header()
 
 # Sidebar configuration
 st.sidebar.title("📝 ResumeBuilder")

@@ -1,5 +1,6 @@
 import streamlit as st # type: ignore
 import ui.render_footer as footer
+import ui.render_header as header
 import preprocessor.parser as parser
 from preprocessor.skills import extract_skills_fuzzy, extract_soft_skills_fuzzy, weighted_skill_analysis
 from recommender.resources import learning_resources
@@ -10,10 +11,7 @@ st.set_page_config(page_title="JobMatcher", page_icon="🔎", layout="centered",
 st.logo("ui/assets/header.png", size="large", icon_image="ui/assets/logo.png")
 
 # Header
-st.image("ui/assets/header.png", use_container_width=True)
-st.write("")
-st.caption("<p style='text-align: center;'>An intelligent tool to analyze your resume, match job roles, and evaluate job descriptions — all in one place</p>", unsafe_allow_html=True)
-st.divider()
+header.render_header()
 
 # Sidebar configuration
 st.sidebar.title("🔎 JobMatcher")

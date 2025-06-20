@@ -1,5 +1,6 @@
 import streamlit as st
-from ui import render_footer as footer
+import ui.render_footer as footer
+import ui.render_header as header
 from analyzer.analysis_enhancer import (
     get_gemini_api_key,
     perform_ai_ats_analysis
@@ -12,10 +13,7 @@ st.set_page_config(page_title="ATS TuneUp", page_icon="🛠️", layout="centere
 st.logo("ui/assets/header.png", size="large", icon_image="ui/assets/logo.png")
 
 # Header
-st.image("ui/assets/header.png", use_container_width=True)
-st.write("")
-st.caption("<p style='text-align: center;'>An intelligent tool to analyze your resume, match job roles, and evaluate job descriptions — all in one place</p>", unsafe_allow_html=True)
-st.divider()
+header.render_header()
 
 # Sidebar
 st.sidebar.title("ATS TuneUp")
