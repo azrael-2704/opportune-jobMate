@@ -26,9 +26,9 @@ col7, col8 = st.columns([0.4, 0.6], vertical_alignment="center", gap="small")
 col9, col10 = st.columns([0.4, 0.6], vertical_alignment="center", gap="small")
 
 with col1:
-    st.page_link("pages/1_🤖_AutoApply.py", label = "AutoApply", icon = "🤖", use_container_width=True)
+    st.page_link("pages/1_📡_JobRadar.py", label = "JobRadar", icon = "📡", use_container_width=True)
 with col2:
-    st.markdown("Automates the job application process by filling out forms.")
+    st.markdown("Finds job listings across multiple platforms in one place.")
 
 with col3:
     st.page_link("pages/2_🔎_JobMatcher.py", label = "JobMatcher", icon = "🔎", use_container_width=True)
