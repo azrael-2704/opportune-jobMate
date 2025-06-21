@@ -12,7 +12,7 @@ Opportune: JobMate is a Streamlit-based suite for job seekers. It helps users an
 ## Modules and Functionality  
 
 ### 1. JobRadar
-**Purpose**: Aggregates and matches job listings from platforms like LinkedIn, Unstop, and Glassdoor.
+**Purpose**: Aggregates and matches job listings from various job listing platforms.
 
 **Features**:
 - Input preferred roles, companies, and locations  
