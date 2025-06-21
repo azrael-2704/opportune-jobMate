@@ -11,17 +11,16 @@ Opportune: JobMate is a Streamlit-based suite for job seekers. It helps users an
 
 ## Modules and Functionality  
 
-### 1. CareerMatch  
-**Purpose**: Recommend ideal job roles based on resume skill analysis.
+### 1. JobRadar
+**Purpose**: Aggregates and matches job listings from platforms like LinkedIn, Unstop, and Glassdoor.
 
-**Pipeline**:
-- Parse resume (PDF/DOCX)
-- Extract skills via NLP and fuzzy matching
-- Canonicalize via `skills.json`
-- Map to roles using `skill_to_job.json`
-- Show matching job roles and role descriptions
+**Features**:
+- Input preferred roles, companies, and locations  
+- Fetch live listings from multiple platforms  
+- Keyword-based filtering and deduplication  
+- Display job cards with
 
-### 2. JobSearch
+### 2. JobMatcher
 **Purpose**: Analyze how well a resume fits a specific job description (JD).
 
 **Pipeline**:
@@ -31,7 +30,17 @@ Opportune: JobMate is a Streamlit-based suite for job seekers. It helps users an
 - Match hard/soft skills against JD
 - Provide compatibility score, missing skills, learning resources
 
-### 3. SkillBridge  
+### 3. CareerMatch  
+**Purpose**: Recommend ideal job roles based on resume skill analysis.
+
+**Pipeline**:
+- Parse resume (PDF/DOCX)
+- Extract skills via NLP and fuzzy matching
+- Canonicalize via `skills.json`
+- Map to roles using `skill_to_job.json`
+- Show matching job roles and role descriptions
+
+### 4. SkillBridge  
 **Purpose**: Compare resume skills with those needed for a selected job role.
 
 **Pipeline**:
@@ -40,7 +49,7 @@ Opportune: JobMate is a Streamlit-based suite for job seekers. It helps users an
 - Identify skill gaps
 - Suggest resources for upskilling
 
-### 4. ResumeBuilder  
+### 5. ResumeBuilder  
 **Purpose**: Form-based resume builder with AI-powered content enhancement.
 
 **Features**:
@@ -51,7 +60,7 @@ Opportune: JobMate is a Streamlit-based suite for job seekers. It helps users an
 - Export to HTML or DOCX
 - Themes: Modern, Minimal, Harvard, Standard
 
-### 5. ATS Tune-Up  
+### 6. ATS Tune-Up  
 **Purpose**: Optimize resumes for ATS compatibility using rule-based and AI-powered evaluation.
 
 **Features**:
@@ -62,16 +71,15 @@ Opportune: JobMate is a Streamlit-based suite for job seekers. It helps users an
 - Gemini API integration with key input and fallback handling
 - Side-by-side Local vs AI analysis options
 
-### 6. AutoApply (Planned)  
-Use browser automation to fill job forms on platforms like LinkedIn, Unstop, Glassdoor.
-
 ---
 
 ## Architecture
 
 ```
+├── analyzer/                 # ATS TuneUp
+├── builder/                  # ResumeBuilder 
 ├── data/                     # Skill and job datasets
-├── builder/                  # ResumeBuilder components
+components
 ├── preprocessor/             # Resume + JD parsing
 ├── recommender/              # Role prediction logic
 ├── pages/                    # Streamlit multi-page UI
@@ -92,6 +100,8 @@ Use browser automation to fill job forms on platforms like LinkedIn, Unstop, Gla
 - python-docx
 - Google Gemini API (free tier)
 - Jinja2 (resume templates)
+- PuMyPDF (PDF parsing)
+- urllib
 
 ---
 
