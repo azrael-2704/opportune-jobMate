@@ -76,15 +76,14 @@ Opportune: JobMate is a Streamlit-based suite for job seekers. It helps users an
 ## Architecture
 
 ```
-├── analyzer/                 # ATS TuneUp
-├── builder/                  # ResumeBuilder 
-├── data/                     # Skill and job datasets
-components
-├── preprocessor/             # Resume + JD parsing
-├── recommender/              # Role prediction logic
-├── pages/                    # Streamlit multi-page UI
-├── ui/                       # Footer, icons, styling
-├── Home.py                   # App entrypoint
+├── analyzer/                   # ATS TuneUp
+├── builder/                    # ResumeBuilder 
+├── data/                       # Skill and job datasets
+├── preprocessor/               # Resume + JD parsing
+├── recommender/                # Role prediction logic
+├── pages/                      # Streamlit multi-page UI
+├── ui/                         # Footer, icons, styling
+├── Home.py                     # App entrypoint
 ├── requirements.txt
 ├── README.md
 ```
